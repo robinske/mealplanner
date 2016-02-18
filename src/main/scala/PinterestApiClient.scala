@@ -1,30 +1,61 @@
 package me.krobinson.mealplan
 
-import dispatch._, Defaults._
+import scalaj.http.{HttpOptions, HttpRequest, Http}
 import argonaut._, Argonaut._
 
-import me.krobinson.mealplan.model.{ApiResponse, Pin}
+import me.krobinson.mealplan.model._
 import me.krobinson.mealplan.model.json._
 
 case class PinterestApiClient(at: AccessToken) {
 
-  val baseApi = "https://api.pinterest.com"
-
-  def buildApiRequestUrl(path: String): Req = url(s"$baseApi/$path?access_token=${at.token}")
-
-  def requestWithRedirect(path: String): Req = {
-    val req = buildApiRequestUrl(path)
-
-    Http.configure(_ setFollowRedirects true)(req OK as.String)
-    val res = Http(req > (x => x))
-    val redirectUrl = res().getHeader("Location")
-
-    url(redirectUrl)
+  def buildPinterestApiRequest(path: String):HttpRequest = {
+    val baseApi = "https://api.pinterest.com"
+    Http(s"$baseApi/$path")
+      .param("access_token", at.token)
+      .param("limit", "100")
   }
 
-  def getBoardPins(board: String): List[Pin] = {
-    val req = requestWithRedirect(s"v1/boards/$board/pins")
-    val resp = Http(req OK as.String)
-    resp().decode[ApiResponse].map(_.data).getOrElse(List.empty)
+  def request(path: String): HttpRequest = {
+    buildPinterestApiRequest(path).option(HttpOptions.followRedirects(true))
+  }
+
+  def processResponse[A]
+  (req: HttpRequest, target: String)
+  (decoder: DecodeJson[ApiResponse[A]]): Result[A] = {
+    val resp = req.asString
+    if (resp.isNotError) {
+      resp.body.decodeOption[ApiResponse[A]](decoder) match {
+        case Some(ar) => Data(ar.data)
+        case None     => Fail(s"Failed to decode JSON response body: ${resp.body}") // TODO - return meaningful parse errors
+      }
+    } else {
+      Fail(
+        s"""
+          |Failed to fetch $target:
+          |
+          |${resp.body}
+          |
+          |Are you sure that's a valid Pinterest board?
+        """.stripMargin
+      )
+    }
+  }
+
+  def getBoardMetadata(board: String): Result[Board] = {
+    val req = request(s"v1/boards/$board")
+    processResponse(req, "board")(boardMetaCodec)
+  }
+
+  def getBoardPins(board: String): Result[List[Pin]] = {
+    /*
+    getBoardMetadata(board) match {
+      case Data(d) =>
+        val numberOfPins = d.counts.pins // TODO - fetch more pages
+      case Fail(m) => Fail(s"Failed to fetch board metadata: $m")
+    }
+    */
+
+    val req = request(s"v1/boards/$board/pins")
+    processResponse(req, "pins")(boardPinsCodec)
   }
 }

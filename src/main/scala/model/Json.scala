@@ -18,16 +18,27 @@ package object json {
       }
   )
 
-  implicit def apiResponseCodec: CodecJson[ApiResponse] = CodecJson(
+  implicit def boardPinsCodec: CodecJson[ApiResponse[List[Pin]]] = CodecJson(
     ar =>
       ("data" := ar.data) ->:
-        ("page" := ar.page) ->:
-        jEmptyObject
-    ,
+      ("nextPage" := ar.nextPage) ->:
+      jEmptyObject,
     hc =>
       for {
         d <- (hc --\ "data").as[List[Pin]]
-        p <- (hc --\ "page").as[Page]
+        p <- (hc --\ "page" --\ "next").as[Option[String]]
+      } yield ApiResponse(d, p)
+  )
+
+  implicit def boardMetaCodec: CodecJson[ApiResponse[Board]] = CodecJson(
+    ar =>
+      ("data" := ar.data) ->:
+      ("nextPage" := ar.nextPage) ->:
+      jEmptyObject,
+    hc =>
+      for {
+        d <- (hc --\ "data").as[Board]
+        p <- (hc --\ "page" --\ "next").as[Option[String]]
       } yield ApiResponse(d, p)
   )
 
@@ -46,17 +57,27 @@ package object json {
       } yield Pin(n, l, i)
   )
 
-  implicit def pageCodec: CodecJson[Page] = CodecJson(
-    p =>
-      ("cursor" := p.cursor) ->:
-      ("next" := p.next) ->:
-      jEmptyObject
-    ,
+  implicit def boardCodec: CodecJson[Board] = CodecJson(
+    b =>
+      ("url"         := b.url)  ->:
+      ("counts"      := b.counts) ->:
+      ("id"          := b.id)   ->:
+      ("description" := b.description)   ->:
+      ("name"        := b.name)   ->:
+      jEmptyObject,
     hc =>
       for {
-        c <- (hc --\ "cursor").as[String]
-        n <- (hc --\ "next").as[String]
-      } yield Page(c, n)
+        n <- (hc --\ "note").as[String]
+        d <- (hc --\ "description").as[String]
+        i <- (hc --\ "id").as[String]
+        u <- (hc --\ "url").as[URL]
+        c <- (hc --\ "counts").as[Counts]
+      } yield Board(n, d, i, u, c)
+  )
+
+  implicit def countsCodec: CodecJson[Counts] = CodecJson(
+    c => ("pins" := c.pins) ->: jEmptyObject,
+    hc => (hc --\ "pins").as[Int].map(Counts)
   )
 
 }

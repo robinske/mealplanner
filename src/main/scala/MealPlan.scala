@@ -4,12 +4,30 @@ import java.io.FileInputStream
 import java.net.URL
 import java.util.Properties
 
-import scala.io.StdIn
 import scala.util.{Random, Try}
 
 import me.krobinson.mealplan.model._
 
 object MealPlan {
+
+  def apply(url: String): String = {
+    val config = loadConfig
+    val accessToken = Authenticate(config)
+
+    println("authenticated")
+    val plan: Result[List[Pin]] = generateMealPlan(accessToken, url)
+    println("got result")
+    println(plan)
+
+    plan match {
+      case Data(p) =>
+        println("here")
+        displayPlan(p)
+      case Fail(m) =>
+        println("failed??")
+        m
+    }
+  }
 
   private def loadConfig: Properties = {
     val config = new Properties()
@@ -17,14 +35,11 @@ object MealPlan {
     config
   }
 
-  def getUrlFromUser(at: AccessToken): Option[URL] = {
-    val boardUrl: String = StdIn.readLine("Enter the board URL you wish to use to generate a meal plan: ")
-    Try(new URL(boardUrl)).toOption
-  }
+  def parseUrl(url: String): Option[URL] = Try(new URL(url)).toOption
 
-  def generateMealPlan(at: AccessToken): Result[List[Pin]] = {
+  def generateMealPlan(at: AccessToken, url: String): Result[List[Pin]] = {
     val client = PinterestApiClient(at)
-    val boardUrl = getUrlFromUser(at)
+    val boardUrl = parseUrl(url)
 
     boardUrl match {
       case Some(url) =>
@@ -35,31 +50,20 @@ object MealPlan {
     }
   }
 
-  def displayPlan(plan: List[Pin]): Unit = {
+  def displayPlan(plan: List[Pin]): String = {
+    println("DISPLAYING??")
     val WEEKDAYS = List("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
 
     Random.shuffle(plan)
       .take(7)
       .zip(WEEKDAYS)
-      .foreach { case (pin, day) =>
-        println()
-        println(day)
-        println(s"${pin.note}")
-        println(s"find the recipe at ${pin.link}")
+      .map { case (pin, day) =>
+        s"""
+          |$day
+          |${pin.note}
+          |find the recipe at ${pin.link}
+        """.stripMargin
       }
+      .mkString("\n\n")
   }
-
-  def displayError(message: String): Unit = println(message)
-
-  def main(args: Array[String]) = {
-    val config = loadConfig
-    val accessToken = Authenticate(config)
-    val plan: Result[List[Pin]] = generateMealPlan(accessToken)
-
-    plan match {
-      case Data(p) => displayPlan(p)
-      case Fail(m) => displayError(m)
-    }
-  }
-
 }

@@ -19,12 +19,12 @@ case class PinterestApiClient(at: AccessToken) {
     buildPinterestApiRequest(path).option(HttpOptions.followRedirects(true))
   }
 
-  def processResponse[A]
+  def processResponse
   (req: HttpRequest, target: String)
-  (decoder: DecodeJson[ApiResponse[A]]): Result[A] = {
+  (decoder: DecodeJson[ApiResponse[List[Pin]]]): Result[List[Pin]] = {
     val resp = req.asString
     if (resp.isNotError) {
-      resp.body.decodeOption[ApiResponse[A]](decoder) match {
+      resp.body.decodeOption[ApiResponse[List[Pin]]] match {
         case Some(ar) => Data(ar.data)
         case None     => Fail(s"Failed to decode JSON response body: ${resp.body}") // TODO - return meaningful parse errors
       }
@@ -41,10 +41,10 @@ case class PinterestApiClient(at: AccessToken) {
     }
   }
 
-  def getBoardMetadata(board: String): Result[Board] = {
-    val req = request(s"v1/boards/$board")
-    processResponse(req, "board")(boardMetaCodec)
-  }
+//  def getBoardMetadata(board: String): Result[Board] = {
+//    val req = request(s"v1/boards/$board")
+//    processResponse(req, "board")(boardMetaCodec)
+//  }
 
   def getBoardPins(board: String): Result[List[Pin]] = {
     /*

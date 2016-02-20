@@ -10,7 +10,8 @@ libraryDependencies ++= Seq(
   "com.twitter"        %% "twitter-server" % "1.18.0",
   "io.argonaut"        %% "argonaut"       % "6.0.4",
   "org.scalatest"      %% "scalatest"      % "2.2.6"  % "test",
-  "org.scalacheck"     %% "scalacheck"     % "1.12.5" % "test"
+  "org.scalacheck"     %% "scalacheck"     % "1.12.5" % "test",
+  "org.mockito"        %  "mockito-core"   % "1.8.5"  % "test"
 )
 
 resolvers += "twttr" at "https://maven.twttr.com/"

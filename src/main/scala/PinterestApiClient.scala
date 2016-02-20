@@ -18,8 +18,10 @@ case class PinterestApiClient(at: AccessToken) {
       .param("limit", "100")
   }
 
-  def request(path: String): HttpRequest = {
-    buildPinterestApiRequest(path).option(HttpOptions.followRedirects(true))
+  def request(path: String, params: Seq[(String, String)] = List.empty): HttpRequest = {
+    buildPinterestApiRequest(path)
+      .params(params)
+      .option(HttpOptions.followRedirects(true))
   }
 
   def processResponse[A]
@@ -34,8 +36,7 @@ case class PinterestApiClient(at: AccessToken) {
         case -\/(-\/(msg)) => s"Invalid JSON response".left
       }
     } else {
-        s"""
-          |Failed to fetch $target:
+        s"""Failed to fetch $target:
           |
           |${resp.body}
           |
@@ -45,7 +46,7 @@ case class PinterestApiClient(at: AccessToken) {
   }
 
   def getBoardMetadata(board: String): Result[Board] = {
-    val req = request(s"v1/boards/$board")
+    val req = request(s"v1/boards/$board", Seq(("fields", "url,id,name,counts,description")))
     processResponse(req, "board")(boardMetaCodec)
   }
 

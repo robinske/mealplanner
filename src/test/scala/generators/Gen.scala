@@ -3,7 +3,7 @@ package me.krobinson.mealplan.json.generators
 import java.net.URL
 
 import me.krobinson.mealplan.MealPlan
-import me.krobinson.mealplan.model.{Counts, Board, ApiResponse, Pin}
+import me.krobinson.mealplan.model.{Counts, Board, ApiResponse, Recipe}
 import org.scalacheck.Gen, Gen._
 
 object `package` {
@@ -18,16 +18,16 @@ object `package` {
       tld      <- oneOf("io", "com", "net")
     } yield new URL(s"$protocol://www.$host.$tld")
 
-  def genPin: Gen[Pin] =
+  def genPin: Gen[Recipe] =
     for {
       note <- alphaStr
       link <- genURL
       id   <- posNum[Int].map(_.toString)
-    } yield Pin(note, link, id)
+    } yield Recipe(note, link, id)
 
   def genPinList(size: Int) = Gen.listOfN(size, genPin)
 
-  def genBoardPins: Gen[ApiResponse[List[Pin]]] =
+  def genBoardPins: Gen[ApiResponse[List[Recipe]]] =
     for {
       nextPage <- option(genURL.map(_.toString))
       size     <- choose(1,5)

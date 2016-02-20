@@ -45,7 +45,7 @@ case class PinterestApiClient(at: AccessToken) {
     processResponse(req, "board")(boardMetaCodec)
   }
 
-  def getBoardPins(board: String): Result[List[Pin]] = {
+  def getBoardPins(board: String): Result[List[Recipe]] = {
     // TODO use this to fetch more pins
     val numReqs = getBoardMetadata(board) match {
       case \/-(d) if d.counts.pins > 100 => Math.min(2, d.counts.pins / 100)
@@ -53,6 +53,6 @@ case class PinterestApiClient(at: AccessToken) {
     }
 
     val req = request(s"v1/boards/$board/pins")
-    processResponse[List[Pin]](req, "pins")(boardPinsCodec)
+    processResponse[List[Recipe]](req, "pins")(boardPinsCodec)
   }
 }

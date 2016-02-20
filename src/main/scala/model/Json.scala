@@ -34,14 +34,14 @@ package object json {
       }
   )
 
-  implicit def boardPinsCodec: CodecJson[ApiResponse[List[Pin]]] = CodecJson(
+  implicit def boardPinsCodec: CodecJson[ApiResponse[List[Recipe]]] = CodecJson(
     ar =>
       ("data" := ar.data) ->:
       ("page" := ("next" :=? ar.nextPage) ->?: jEmptyObject) ->:
       jEmptyObject,
     hc =>
       for {
-        d <- (hc --\ "data").as[List[Pin]]
+        d <- (hc --\ "data").as[List[Recipe]]
         p <- (hc --\ "page" --\ "next").as[Option[String]]
       } yield ApiResponse(d, p)
   )
@@ -58,7 +58,7 @@ package object json {
       } yield ApiResponse(d, p)
   )
 
-  implicit def pinCodec: CodecJson[Pin] = CodecJson(
+  implicit def pinCodec: CodecJson[Recipe] = CodecJson(
     p =>
       ("note" := p.note) ->:
       ("link" := p.link) ->:
@@ -70,7 +70,7 @@ package object json {
         n <- (hc --\ "note").as[Option[String]].map(_.getOrElse(""))
         l <- (hc --\ "link").as[URL]
         i <- (hc --\ "id").as[String]
-      } yield Pin(n, l, i)
+      } yield Recipe(n, l, i)
   )
 
   implicit def boardCodec: CodecJson[Board] = CodecJson(

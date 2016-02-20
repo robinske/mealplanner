@@ -14,4 +14,4 @@ case class Counts(pins: Int = 0)
 
 case class Board(name: String, description: String, id: String, url: URL, counts: Counts)
 
-case class Pin(note: String, link: URL, id: String)
+case class Recipe(note: String, link: URL, id: String)

@@ -8,7 +8,7 @@ import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{Matchers, FunSpec}
 import me.krobinson.mealplan.json.generators._
 
-import me.krobinson.mealplan.model.{Counts, Board, Pin, ApiResponse}
+import me.krobinson.mealplan.model.{Counts, Board, Recipe, ApiResponse}
 
 class JsonSpec extends FunSpec with Matchers with GeneratorDrivenPropertyChecks {
 
@@ -33,7 +33,7 @@ class JsonSpec extends FunSpec with Matchers with GeneratorDrivenPropertyChecks 
     it("should encode and decode into the same object") {
       forAll(genBoardPins, minSuccessful(5), MaxSize(5)) { orig =>
         val jString = orig.asJson.nospaces
-        val res = handleJson(jString.decode[ApiResponse[List[Pin]]])(identity)
+        val res = handleJson(jString.decode[ApiResponse[List[Recipe]]])(identity)
         res shouldBe orig.right
       }
     }
@@ -53,7 +53,7 @@ class JsonSpec extends FunSpec with Matchers with GeneratorDrivenPropertyChecks 
     it("should encode and decode into the same object") {
       forAll(genPin, minSuccessful(5), MaxSize(5)) { orig =>
         val jString = orig.asJson.nospaces
-        val res = handleJson(jString.decode[Pin])(identity)
+        val res = handleJson(jString.decode[Recipe])(identity)
         res shouldBe orig.right
       }
     }
@@ -85,13 +85,13 @@ class JsonSpec extends FunSpec with Matchers with GeneratorDrivenPropertyChecks 
         val json = orig.asJson
 
         val hc = json.hcursor
-        (hc --\ "Sunday").as[Pin].toOption shouldBe orig.sunday
-        (hc --\ "Monday").as[Pin].toOption shouldBe orig.monday
-        (hc --\ "Tuesday").as[Pin].toOption shouldBe orig.tuesday
-        (hc --\ "Wednesday").as[Pin].toOption shouldBe orig.wednesday
-        (hc --\ "Thursday").as[Pin].toOption shouldBe orig.thursday
-        (hc --\ "Friday").as[Pin].toOption shouldBe orig.friday
-        (hc --\ "Saturday").as[Pin].toOption shouldBe orig.saturday
+        (hc --\ "Sunday").as[Recipe].toOption shouldBe orig.sunday
+        (hc --\ "Monday").as[Recipe].toOption shouldBe orig.monday
+        (hc --\ "Tuesday").as[Recipe].toOption shouldBe orig.tuesday
+        (hc --\ "Wednesday").as[Recipe].toOption shouldBe orig.wednesday
+        (hc --\ "Thursday").as[Recipe].toOption shouldBe orig.thursday
+        (hc --\ "Friday").as[Recipe].toOption shouldBe orig.friday
+        (hc --\ "Saturday").as[Recipe].toOption shouldBe orig.saturday
       }
     }
   }

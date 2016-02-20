@@ -14,13 +14,13 @@ import me.krobinson.mealplan.model._
 import me.krobinson.mealplan.model.json._
 
 case class MealPlan(
-  sunday: Option[Pin],
-  monday: Option[Pin],
-  tuesday: Option[Pin],
-  wednesday: Option[Pin],
-  thursday: Option[Pin],
-  friday: Option[Pin],
-  saturday: Option[Pin]
+  sunday: Option[Recipe],
+  monday: Option[Recipe],
+  tuesday: Option[Recipe],
+  wednesday: Option[Recipe],
+  thursday: Option[Recipe],
+  friday: Option[Recipe],
+  saturday: Option[Recipe]
 )
 
 object MealPlan {
@@ -43,7 +43,7 @@ object MealPlan {
 
   def parseUrl(url: String): Option[URL] = Try(new URL(url)).toOption
 
-  def generateMealPlan(at: AccessToken, url: String): Result[List[Pin]] = {
+  def generateMealPlan(at: AccessToken, url: String): Result[List[Recipe]] = {
     val client = PinterestApiClient(at)
     val boardUrl = parseUrl(url)
 
@@ -56,7 +56,7 @@ object MealPlan {
     }
   }
 
-  def mealPlanJson(plan: List[Pin]): Json = {
+  def mealPlanJson(plan: List[Recipe]): Json = {
     val mealPlan = Random.shuffle(plan)
 
     MealPlan(

@@ -38,13 +38,13 @@ class MealPlanSpec extends FunSpec with Matchers with GeneratorDrivenPropertyChe
         val result = mealPlanJson(pl)
         val hc = result.hcursor
 
-        (hc --\ "Sunday").success shouldBe defined
-        (hc --\ "Monday").success shouldBe defined
-        (hc --\ "Tuesday").success shouldBe defined
-        (hc --\ "Wednesday").success shouldBe defined
-        (hc --\ "Thursday").success shouldBe defined
-        (hc --\ "Friday").success shouldBe defined
-        (hc --\ "Saturday").success shouldBe defined
+        assert((hc --\ "Sunday").succeeded)
+        assert((hc --\ "Monday").succeeded)
+        assert((hc --\ "Tuesday").succeeded)
+        assert((hc --\ "Wednesday").succeeded)
+        assert((hc --\ "Thursday").succeeded)
+        assert((hc --\ "Friday").succeeded)
+        assert((hc --\ "Saturday").succeeded)
       }
     }
 
@@ -54,13 +54,13 @@ class MealPlanSpec extends FunSpec with Matchers with GeneratorDrivenPropertyChe
 
         val hc = result.hcursor
 
-        (hc --\ "Sunday").success shouldBe defined
-        (hc --\ "Monday").success shouldBe defined
-        (hc --\ "Tuesday").success shouldBe defined
-        (hc --\ "Wednesday").success shouldBe defined
-        (hc --\ "Thursday").success shouldBe empty
-        (hc --\ "Friday").success shouldBe empty
-        (hc --\ "Saturday").success shouldBe empty
+        assert((hc --\ "Sunday").succeeded)
+        assert((hc --\ "Monday").succeeded)
+        assert((hc --\ "Tuesday").succeeded)
+        assert((hc --\ "Wednesday").succeeded)
+        assert((hc --\ "Thursday").failed)
+        assert((hc --\ "Friday").failed)
+        assert((hc --\ "Saturday").failed)
       }
     }
 

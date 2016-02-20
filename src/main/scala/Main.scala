@@ -8,10 +8,10 @@ import io.finch._
 
 object Main extends TwitterServer {
 
-  val getHealth: Endpoint[String] = get("health") { Ok("Hello, World!") }
+  val getHealth: Endpoint[String] = get("health") { Ok("Hello, World!") } // TODO ascii art. obviously.
   val getMealPlan: Endpoint[String] = {
     get("mealplan" ? param("boardUrl")) { boardUrl: String =>
-      Ok(MealPlan(boardUrl))
+      Ok(MealPlan(boardUrl).nospaces)
     }
   }
 

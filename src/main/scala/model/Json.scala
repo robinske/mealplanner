@@ -3,17 +3,22 @@ package me.krobinson.mealplan.model
 import java.net.URL
 
 import argonaut._, Argonaut._, DecodeResult._
+import me.krobinson.mealplan.MealPlan
 
 import scala.util.{Success, Try}
 
 package object json {
+
+  def errorJson(message: String): Json =
+    ("error" := message) ->: jEmptyObject
+
   implicit def urlCodec: CodecJson[URL] = CodecJson(
     url => url.toString.asJson,
     hc =>
       hc.as[String] flatMap { urlStr =>
         Try(new URL(urlStr)) match {
           case Success(u) => ok(u)
-          case _          => fail("Failed to parse link as URL", hc.history)
+          case _          => fail(s"Failed to parse link as URL $urlStr", hc.history)
         }
       }
   )
@@ -78,6 +83,18 @@ package object json {
   implicit def countsCodec: CodecJson[Counts] = CodecJson(
     c => ("pins" := c.pins) ->: jEmptyObject,
     hc => (hc --\ "pins").as[Int].map(Counts)
+  )
+
+  implicit def mealPlanEncoder: EncodeJson[MealPlan] = EncodeJson(
+    mp =>
+      ("Sunday"    :=? mp.sunday)    ->?:
+      ("Monday"    :=? mp.monday)    ->?:
+      ("Tuesday"   :=? mp.tuesday)   ->?:
+      ("Wednesday" :=? mp.wednesday) ->?:
+      ("Thursday"  :=? mp.thursday)  ->?:
+      ("Friday"    :=? mp.friday)    ->?:
+      ("Saturday"  :=? mp.saturday)  ->?:
+      jEmptyObject
   )
 
 }

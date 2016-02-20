@@ -6,9 +6,12 @@ import argonaut._, Argonaut._
 import me.krobinson.mealplan.model._
 import me.krobinson.mealplan.model.json._
 
+import scalaz.{-\/, \/-}
+import scalaz.syntax.id._
+
 case class PinterestApiClient(at: AccessToken) {
 
-  def buildPinterestApiRequest(path: String):HttpRequest = {
+  def buildPinterestApiRequest(path: String): HttpRequest = {
     val baseApi = "https://api.pinterest.com"
     Http(s"$baseApi/$path")
       .param("access_token", at.token)
@@ -19,43 +22,41 @@ case class PinterestApiClient(at: AccessToken) {
     buildPinterestApiRequest(path).option(HttpOptions.followRedirects(true))
   }
 
-  def processResponse
+  def processResponse[A]
   (req: HttpRequest, target: String)
-  (decoder: DecodeJson[ApiResponse[List[Pin]]]): Result[List[Pin]] = {
+  (decoder: DecodeJson[ApiResponse[A]]): Result[A] = {
     val resp = req.asString
     if (resp.isNotError) {
-      resp.body.decodeOption[ApiResponse[List[Pin]]] match {
-        case Some(ar) => Data(ar.data)
-        case None     => Fail(s"Failed to decode JSON response body: ${resp.body}") // TODO - return meaningful parse errors
+      resp.body.decode[ApiResponse[A]](decoder) match {
+        case \/-(ar) => ar.data.right
+        case -\/(\/-((failure,ch))) =>
+          s"""Failure occured when decoding JSON response body: $failure at: $ch""".left
+        case -\/(-\/(msg)) => s"Invalid JSON response".left
       }
     } else {
-      Fail(
         s"""
           |Failed to fetch $target:
           |
           |${resp.body}
           |
           |Are you sure that's a valid Pinterest board?
-        """.stripMargin
-      )
+        """.stripMargin.left
     }
   }
 
-//  def getBoardMetadata(board: String): Result[Board] = {
-//    val req = request(s"v1/boards/$board")
-//    processResponse(req, "board")(boardMetaCodec)
-//  }
+  def getBoardMetadata(board: String): Result[Board] = {
+    val req = request(s"v1/boards/$board")
+    processResponse(req, "board")(boardMetaCodec)
+  }
 
   def getBoardPins(board: String): Result[List[Pin]] = {
-    /*
-    getBoardMetadata(board) match {
-      case Data(d) =>
-        val numberOfPins = d.counts.pins // TODO - fetch more pages
-      case Fail(m) => Fail(s"Failed to fetch board metadata: $m")
+    // TODO use this to fetch more pins
+    val numReqs = getBoardMetadata(board) match {
+      case \/-(d) if d.counts.pins > 100 => Math.min(2, d.counts.pins / 100)
+      case _ => 0
     }
-    */
 
     val req = request(s"v1/boards/$board/pins")
-    processResponse(req, "pins")(boardPinsCodec)
+    processResponse[List[Pin]](req, "pins")(boardPinsCodec)
   }
 }

@@ -2,10 +2,11 @@ package me.krobinson.mealplan.model
 
 import java.net.URL
 
-sealed trait Result[+A]
-case class Data[A](data: A) extends Result[A]
-case class Fail(message: String) extends Result[Nothing]
+import scalaz.\/
 
+object `package` {
+  type Result[A] = \/[String, A]
+}
 
 case class Counts(pins: Int = 0)
 

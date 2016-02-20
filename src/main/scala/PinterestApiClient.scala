@@ -29,12 +29,7 @@ case class PinterestApiClient(at: AccessToken) {
   (decoder: DecodeJson[ApiResponse[A]]): Result[A] = {
     val resp = req.asString
     if (resp.isNotError) {
-      resp.body.decode[ApiResponse[A]](decoder) match {
-        case \/-(ar) => ar.data.right
-        case -\/(\/-((failure,ch))) =>
-          s"""Failure occured when decoding JSON response body: $failure at: $ch""".left
-        case -\/(-\/(msg)) => s"Invalid JSON response".left
-      }
+      handleJson(resp.body.decode[ApiResponse[A]](decoder))(_.data)
     } else {
         s"""Failed to fetch $target:
           |

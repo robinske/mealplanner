@@ -6,8 +6,19 @@ import argonaut._, Argonaut._, DecodeResult._
 import me.krobinson.mealplan.MealPlan
 
 import scala.util.{Success, Try}
+import scalaz.{\/, -\/, \/-}
+import scalaz.syntax.id._
 
 package object json {
+
+  def handleJson[A, B]
+  (decoded: \/[String \/ (String, CursorHistory), A])
+  (success: A => B): Result[B] = decoded match {
+    case \/-(ar) => success(ar).right
+    case -\/(\/-((failure,ch))) =>
+      s"""Failure occured when decoding JSON response body: $failure at: $ch""".left
+    case -\/(-\/(msg)) => s"Invalid JSON response".left
+  }
 
   def errorJson(message: String): Json =
     ("error" := message) ->: jEmptyObject
@@ -26,7 +37,7 @@ package object json {
   implicit def boardPinsCodec: CodecJson[ApiResponse[List[Pin]]] = CodecJson(
     ar =>
       ("data" := ar.data) ->:
-      ("nextPage" := ar.nextPage) ->:
+      ("page" := ("next" :=? ar.nextPage) ->?: jEmptyObject) ->:
       jEmptyObject,
     hc =>
       for {
@@ -38,7 +49,7 @@ package object json {
   implicit def boardMetaCodec: CodecJson[ApiResponse[Board]] = CodecJson(
     ar =>
       ("data" := ar.data) ->:
-      ("nextPage" := ar.nextPage) ->:
+      ("page" := ("next" :=? ar.nextPage) ->?: jEmptyObject) ->:
       jEmptyObject,
     hc =>
       for {
@@ -56,7 +67,7 @@ package object json {
     ,
     hc =>
       for {
-        n <- (hc --\ "note").as[String]
+        n <- (hc --\ "note").as[Option[String]].map(_.getOrElse(""))
         l <- (hc --\ "link").as[URL]
         i <- (hc --\ "id").as[String]
       } yield Pin(n, l, i)
@@ -72,7 +83,7 @@ package object json {
       jEmptyObject,
     hc =>
       for {
-        n <- (hc --\ "note").as[String]
+        n <- (hc --\ "name").as[String]
         d <- (hc --\ "description").as[String]
         i <- (hc --\ "id").as[String]
         u <- (hc --\ "url").as[URL]

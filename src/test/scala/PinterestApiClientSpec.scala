@@ -1,7 +1,5 @@
 package me.krobinson.mealplan
 
-import java.io.File
-
 import org.scalatest.mock.MockitoSugar
 import org.mockito.Mockito._
 import org.scalatest.{FunSpec, Matchers}
@@ -10,8 +8,6 @@ import scala.io.Source
 import scalaj.http.{HttpResponse, HttpRequest, HttpOptions}
 
 import me.krobinson.mealplan.model.json._
-
-import scalaz.{\/-, -\/}
 
 class PinterestApiClientSpec extends FunSpec with Matchers with MockitoSugar {
 

@@ -31,12 +31,30 @@ object MealPlan {
     config
   }
 
-  def apply(url: String): Json = {
+  def parseDays(days: Option[String]): Days = {
+    days match {
+      case None => (1,1,1,1,1,1,1)
+      case Some(d) =>
+        val l = d.split(",").map(_.toLowerCase)
+        def setBit(day: String): Int = if (l.find(_ == day).isDefined) 1 else 0
+        (
+          setBit("sunday"),
+          setBit("monday"),
+          setBit("tuesday"),
+          setBit("wednesday"),
+          setBit("thursday"),
+          setBit("friday"),
+          setBit("saturday")
+        )
+    }
+  }
+
+  def apply(url: String, days: Option[String]): Json = {
     val config = loadConfig
     val accessToken = Authenticate(config)
 
     generateMealPlan(accessToken, url) match {
-      case \/-(p) => mealPlanJson(p)
+      case \/-(p) => mealPlanJson(p, parseDays(days))
       case -\/(m) => errorJson(m)
     }
   }
@@ -56,17 +74,20 @@ object MealPlan {
     }
   }
 
-  def mealPlanJson(plan: List[Recipe]): Json = {
+  def mealPlanJson(plan: List[Recipe], days: Days): Json = {
     val mealPlan = Random.shuffle(plan)
 
+    def addMeal(idx: Int, day: Int): Option[Recipe] =
+      if (day == 1) mealPlan.lift(idx) else None
+
     MealPlan(
-      mealPlan.lift(0),
-      mealPlan.lift(1),
-      mealPlan.lift(2),
-      mealPlan.lift(3),
-      mealPlan.lift(4),
-      mealPlan.lift(5),
-      mealPlan.lift(6)
+      addMeal(0, days._1),
+      addMeal(1, days._2),
+      addMeal(2, days._3),
+      addMeal(3, days._4),
+      addMeal(4, days._5),
+      addMeal(5, days._6),
+      addMeal(6, days._7)
     ).asJson
   }
 }

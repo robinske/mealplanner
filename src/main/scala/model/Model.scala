@@ -8,6 +8,8 @@ import scalaz.{\/-, \/}
 
 object `package` {
   type Result[A] = \/[String, A]
+
+  type Days = (Int, Int, Int, Int, Int, Int, Int)
 }
 
 case class ApiResponse[A](data: A, nextPage: Option[String])

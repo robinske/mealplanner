@@ -7,7 +7,7 @@ Next Steps:
 * [x] return something other than just the first 7 results
 * [x] add tests
 * [x] add photo urls to pins
-* [ ] take input for days to return (e.g. Monday, Thursday, Friday)
+* [x] take input for days to return (e.g. Monday, Thursday, Friday)
 * [ ] create UI
 * [ ] create oauth flow
 * [ ] add to personal website

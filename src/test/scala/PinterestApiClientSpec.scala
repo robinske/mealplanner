@@ -5,7 +5,7 @@ import org.mockito.Mockito._
 import org.scalatest.{FunSpec, Matchers}
 
 import scala.io.Source
-import scalaj.http.{HttpResponse, HttpRequest, HttpOptions}
+import scalaj.http.{HttpResponse, HttpRequest}
 
 import me.krobinson.mealplan.model.json._
 
@@ -55,7 +55,6 @@ class PinterestApiClientSpec extends FunSpec with Matchers with MockitoSugar {
     /*
     it("should be configured to follow redirects") {
       val req = client.request("path")
-      println(req.options.toList)
       req.options should contain (HttpOptions.followRedirects(true))
     }
     */
@@ -73,8 +72,9 @@ class PinterestApiClientSpec extends FunSpec with Matchers with MockitoSugar {
       when(req.asString).thenReturn(resp)
 
       val result = client.processResponse(req, "pins")(boardPinsCodec)
+      assert(result.isRight, result)
+
       val pins = result.getOrElse(List.empty)
-      pins should not be empty
       assert(pins.length == 25)
     }
 

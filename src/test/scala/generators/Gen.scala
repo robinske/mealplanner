@@ -2,8 +2,9 @@ package me.krobinson.mealplan.json.generators
 
 import java.net.URL
 
+import argonaut._, Argonaut._
 import me.krobinson.mealplan.MealPlan
-import me.krobinson.mealplan.model.{Counts, Board, ApiResponse, Recipe}
+import me.krobinson.mealplan.model._
 import org.scalacheck.Gen, Gen._
 
 object `package` {
@@ -18,14 +19,25 @@ object `package` {
       tld      <- oneOf("io", "com", "net")
     } yield new URL(s"$protocol://www.$host.$tld")
 
-  def genPin: Gen[Recipe] =
+  def genImage: Gen[Image] =
     for {
-      note <- alphaStr
-      link <- genURL
-      id   <- posNum[Int].map(_.toString)
-    } yield Recipe(note, link, id)
+      url <- genURL
+      w   <- posNum[Int]
+      h   <- posNum[Int]
+    } yield Image(url, w, h)
 
-  def genPinList(size: Int) = Gen.listOfN(size, genPin)
+  def genRecipe: Gen[Recipe] =
+    for {
+      note    <- alphaStr
+      link    <- genURL
+      id      <- posNum[Int].map(_.toString)
+      medKey  <- alphaStr
+      img     <- genImage
+      metaKey <- nonEmptyAlphaStr
+      metaVal <- alphaStr
+    } yield Recipe(note, link, id, img, Json(metaKey := metaVal))
+
+  def genPinList(size: Int) = Gen.listOfN(size, genRecipe)
 
   def genBoardPins: Gen[ApiResponse[List[Recipe]]] =
     for {
@@ -56,12 +68,12 @@ object `package` {
 
   def genMealPlan: Gen[MealPlan] =
     for {
-      su <- option(genPin)
-      mo <- option(genPin)
-      tu <- option(genPin)
-      we <- option(genPin)
-      th <- option(genPin)
-      fr <- option(genPin)
-      sa <- option(genPin)
+      su <- option(genRecipe)
+      mo <- option(genRecipe)
+      tu <- option(genRecipe)
+      we <- option(genRecipe)
+      th <- option(genRecipe)
+      fr <- option(genRecipe)
+      sa <- option(genRecipe)
     } yield MealPlan(su, mo, tu, we, th, fr, sa)
 }

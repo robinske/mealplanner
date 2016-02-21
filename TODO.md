@@ -5,10 +5,11 @@ MVP:
 Next Steps:
 * [x] error handling of http requests
 * [x] return something other than just the first 7 results
-* [ ] add tests
-* [ ] create oauth flow
-* [ ] add photo urls to pins
+* [x] add tests
+* [x] add photo urls to pins
+* [ ] take input for days to return (e.g. Monday, Thursday, Friday)
 * [ ] create UI
+* [ ] create oauth flow
 * [ ] add to personal website
 
 Later...

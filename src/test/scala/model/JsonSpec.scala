@@ -8,7 +8,7 @@ import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{Matchers, FunSpec}
 import me.krobinson.mealplan.json.generators._
 
-import me.krobinson.mealplan.model.{Counts, Board, Recipe, ApiResponse}
+import me.krobinson.mealplan.model._
 
 class JsonSpec extends FunSpec with Matchers with GeneratorDrivenPropertyChecks {
 
@@ -21,7 +21,7 @@ class JsonSpec extends FunSpec with Matchers with GeneratorDrivenPropertyChecks 
 
   describe("#urlCodec") {
     it("should encode and decode into the same object") {
-      forAll(genURL, minSuccessful(5), MaxSize(5)) { orig =>
+      forAll(genURL, minSuccessful(3), MaxSize(3)) { orig =>
         val jString = orig.asJson.nospaces
         val res = handleJson(jString.decode[URL])(identity)
         res shouldBe orig.right
@@ -31,7 +31,7 @@ class JsonSpec extends FunSpec with Matchers with GeneratorDrivenPropertyChecks 
 
   describe("#boardPinsCodec") {
     it("should encode and decode into the same object") {
-      forAll(genBoardPins, minSuccessful(5), MaxSize(5)) { orig =>
+      forAll(genBoardPins, minSuccessful(3), MaxSize(3)) { orig =>
         val jString = orig.asJson.nospaces
         val res = handleJson(jString.decode[ApiResponse[List[Recipe]]])(identity)
         res shouldBe orig.right
@@ -41,7 +41,7 @@ class JsonSpec extends FunSpec with Matchers with GeneratorDrivenPropertyChecks 
 
   describe("#boardMetaCodec") {
     it("should encode and decode into the same object") {
-      forAll(genBoardMeta, minSuccessful(5), MaxSize(5)) { orig =>
+      forAll(genBoardMeta, minSuccessful(3), MaxSize(3)) { orig =>
         val jString = orig.asJson.nospaces
         val res = handleJson(jString.decode[ApiResponse[Board]])(identity)
         res shouldBe orig.right
@@ -49,10 +49,20 @@ class JsonSpec extends FunSpec with Matchers with GeneratorDrivenPropertyChecks 
     }
   }
 
-  describe("#pinCodec") {
+  describe("#imageCodec") {
     it("should encode and decode into the same object") {
-      forAll(genPin, minSuccessful(5), MaxSize(5)) { orig =>
+      forAll(genImage, minSuccessful(3), MaxSize(3)) { orig: Image =>
         val jString = orig.asJson.nospaces
+        val res = handleJson(jString.decode[Image])(identity)
+        res shouldBe orig.right
+      }
+    }
+  }
+
+  describe("#recipeCodec") {
+    it("should encode and decode into the same object") {
+      forAll(genRecipe, minSuccessful(3), MaxSize(3)) { orig: Recipe =>
+        val jString = orig.asJson(recipeCodec).nospaces
         val res = handleJson(jString.decode[Recipe])(identity)
         res shouldBe orig.right
       }
@@ -61,7 +71,7 @@ class JsonSpec extends FunSpec with Matchers with GeneratorDrivenPropertyChecks 
 
   describe("#boardCodec") {
     it("should encode and decode into the same object") {
-      forAll(genBoard, minSuccessful(5), MaxSize(5)) { orig =>
+      forAll(genBoard, minSuccessful(3), MaxSize(3)) { orig =>
         val jString = orig.asJson.nospaces
         val res = handleJson(jString.decode[Board])(identity)
         res shouldBe orig.right
@@ -71,7 +81,7 @@ class JsonSpec extends FunSpec with Matchers with GeneratorDrivenPropertyChecks 
 
   describe("#countsCodec") {
     it("should encode and decode into the same object") {
-      forAll(genCounts, minSuccessful(5), MaxSize(5)) { orig =>
+      forAll(genCounts, minSuccessful(3), MaxSize(3)) { orig =>
         val jString = orig.asJson.nospaces
         val res = handleJson(jString.decode[Counts])(identity)
         res shouldBe orig.right
@@ -79,9 +89,9 @@ class JsonSpec extends FunSpec with Matchers with GeneratorDrivenPropertyChecks 
     }
   }
 
-  describe("mealPlanEncoder") {
+  describe("#mealPlanEncoder") {
     it("should encode the existing days") {
-      forAll(genMealPlan, minSuccessful(5), MaxSize(5)) { orig =>
+      forAll(genMealPlan, minSuccessful(3), MaxSize(3)) { orig =>
         val json = orig.asJson
 
         val hc = json.hcursor

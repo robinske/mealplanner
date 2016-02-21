@@ -52,7 +52,7 @@ case class PinterestApiClient(at: AccessToken) {
       case _ => 0
     }
 
-    val req = request(s"v1/boards/$board/pins")
+    val req = request(s"v1/boards/$board/pins", Seq(("fields", "note,link,id,image,media,metadata")))
     processResponse[List[Recipe]](req, "pins")(boardPinsCodec)
   }
 }

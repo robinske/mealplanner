@@ -58,19 +58,48 @@ package object json {
       } yield ApiResponse(d, p)
   )
 
-  implicit def pinCodec: CodecJson[Recipe] = CodecJson(
-    p =>
-      ("note" := p.note) ->:
-      ("link" := p.link) ->:
-      ("id"   := p.id)   ->:
-      jEmptyObject
-    ,
+  implicit def recipeCodec: CodecJson[Recipe] = CodecJson(
+    p => {
+      val image: Json = p.media match {
+        case i: Image => p.media.asInstanceOf[Image].asJson
+        case Video    => Json()
+      }
+
+      ("note"     := p.note) ->:
+      ("link"     := p.link) ->:
+      ("id"       := p.id) ->:
+      ("media"    := ("type" := p.media.`type`) ->: jEmptyObject) ->:
+      ("metadata" := p.metadata) ->:
+      image
+    },
+    hc => {
+      for {
+        note <- (hc --\ "note").as[Option[String]].map(_.getOrElse(""))
+        link <- (hc --\ "link").as[URL]
+        id   <- (hc --\ "id").as[String]
+        med  <- Media(hc)
+        meta <- (hc --\ "metadata").as[Json]
+      } yield Recipe(note, link, id, med, meta)
+    }
+  )
+
+
+  implicit def imageCodec: CodecJson[Image] = CodecJson(
+    i =>
+      ("image" :=
+        ("original" :=
+          ("url" := i.url) ->:
+            ("width" := i.width) ->:
+            ("height" := i.height) ->:
+            jEmptyObject
+          ) ->: jEmptyObject
+        ) ->: jEmptyObject,
     hc =>
       for {
-        n <- (hc --\ "note").as[Option[String]].map(_.getOrElse(""))
-        l <- (hc --\ "link").as[URL]
-        i <- (hc --\ "id").as[String]
-      } yield Recipe(n, l, i)
+        url    <- (hc --\ "image" --\ "original" --\ "url").as[URL]
+        width  <- (hc --\ "image" --\ "original" --\ "width").as[Int]
+        height <- (hc --\ "image" --\ "original" --\ "height").as[Int]
+      } yield Image(url, width, height)
   )
 
   implicit def boardCodec: CodecJson[Board] = CodecJson(

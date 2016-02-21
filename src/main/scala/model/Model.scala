@@ -40,9 +40,12 @@ object Media {
 }
 
 case class Recipe(
+  name: Option[String],
   note: String,
   link: URL,
   id: String,
   media: Media,
-  metadata: Json
+  metadata: Json,
+  servings: Int = 0,
+  ingredients: List[Ingredient] = List.empty
 )

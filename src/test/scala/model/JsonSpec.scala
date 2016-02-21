@@ -1,6 +1,8 @@
 package me.krobinson.mealplan.model.json
 
 import java.net.URL
+import scala.io.Source
+import scalaz.\/-
 import scalaz.syntax.id._
 import argonaut._, Argonaut._
 
@@ -103,6 +105,32 @@ class JsonSpec extends FunSpec with Matchers with GeneratorDrivenPropertyChecks 
         (hc --\ "Friday").as[Recipe].toOption shouldBe orig.friday
         (hc --\ "Saturday").as[Recipe].toOption shouldBe orig.saturday
       }
+    }
+  }
+
+  describe("#ingredentCodec") {
+    it("should decode the ingredients nested in the meta fields") {
+      val json = Source.fromFile("src/test/resources/ingredients.json").getLines().mkString
+
+      val res = handleJson(json.decode[ApiResponse[List[Recipe]]])(_.data)
+
+      val expected = List(
+        Ingredient("Strip loin steak, Grass Fed", "Meat", Lb(1)),
+        Ingredient("Basil, dried", "Produce", Tsp(2)),
+        Ingredient("Chives, dried", "Produce", Tsp(3)),
+        Ingredient("Dill, dried", "Produce", Tsp(2)),
+        Ingredient("Garlic powder", "Produce", Tsp(2)),
+        Ingredient("Greens, mixed", "Produce", Cup(3)),
+        Ingredient("Kale", "Produce", Cup(3)),
+        Ingredient("Parsley, dried", "Produce", Tsp(2)),
+        Ingredient("Coconut milk, light", "Canned Goods", Tbsp(2)),
+        Ingredient("Mayo, whole", "Condiments", Tbsp(2)),
+        Ingredient("Black pepper", "Baking & Spices", Tsp(0.5)),
+        Ingredient("Sea salt", "Baking & Spices", Tsp(1)),
+        Ingredient("Ghee", "Dairy", Tbsp(1))
+      )
+
+      res.map(_.flatMap(_.ingredients)) shouldBe \/-(expected)
     }
   }
 }

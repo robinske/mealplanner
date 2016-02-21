@@ -35,7 +35,7 @@ object `package` {
       img     <- genImage
       metaKey <- nonEmptyAlphaStr
       metaVal <- alphaStr
-    } yield Recipe(note, link, id, img, Json(metaKey := metaVal))
+    } yield Recipe(None, note, link, id, img, Json(metaKey := metaVal))
 
   def genPinList(size: Int) = Gen.listOfN(size, genRecipe)
 

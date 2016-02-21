@@ -9,6 +9,9 @@ import scala.util.{Success, Try}
 import scalaz.{\/, -\/, \/-}
 import scalaz.syntax.id._
 
+import scalaz.syntax.traverse.ToTraverseOps
+import scalaz.std.list.listInstance
+
 package object json {
 
   def handleJson[A, B]
@@ -58,18 +61,42 @@ package object json {
       } yield ApiResponse(d, p)
   )
 
+  implicit def measurementDecoder: DecodeJson[Measurement] = DecodeJson(hc =>
+    hc.as[Option[String]].map {
+      _ match {
+        case Some(s) => Measurement(s)
+        case None    => OtherMeasurement("unknown")
+      }
+    }
+  )
+
+  def ingredientDecoder(category: String): DecodeJson[Ingredient] = DecodeJson(hc =>
+    for {
+      amount <- (hc --\ "amount").as[Measurement]
+      name <- (hc --\ "name").as[String]
+    } yield Ingredient(name, category, amount)
+  )
+
+  implicit def ingredientListDecoder: DecodeJson[List[Ingredient]] = DecodeJson(
+    hc =>
+      for {
+        category <- (hc --\ "category").as[String]
+        ings     <- (hc --\ "ingredients").as[List[Ingredient]](ListDecodeJson(ingredientDecoder(category)))
+      } yield ings
+  )
+
   implicit def recipeCodec: CodecJson[Recipe] = CodecJson(
     p => {
       val image: Json = p.media match {
-        case i: Image => p.media.asInstanceOf[Image].asJson
+        case i: Image => i.asJson
         case Video    => Json()
       }
 
-      ("note"     := p.note) ->:
-      ("link"     := p.link) ->:
-      ("id"       := p.id) ->:
+      ("note"     := p.note)                    ->:
+      ("link"     := p.link)                    ->:
+      ("id"       := p.id)                      ->:
       ("media"    := ("type" := p.media.`type`) ->: jEmptyObject) ->:
-      ("metadata" := p.metadata) ->:
+      ("metadata" := p.metadata)                ->:
       image
     },
     hc => {
@@ -79,7 +106,17 @@ package object json {
         id   <- (hc --\ "id").as[String]
         med  <- Media(hc)
         meta <- (hc --\ "metadata").as[Json]
-      } yield Recipe(note, link, id, med, meta)
+        name <- (hc --\ "metadata" --\ "recipe" --\ "name").as[Option[String]]
+        serv <- (hc --\ "metadata" --\ "recipe" --\ "servings" --\ "serves").as[Option[String]]
+        jarr <- (hc --\ "metadata" --\ "recipe" --\ "ingredients").as[Option[JsonArray]]
+        ingr <- jarr match {
+                  case Some(i) => i.traverseU { json: Json => json.jdecode[List[Ingredient]] }.map(_.flatten)
+                  case None => DecodeResult.ok(List.empty[Ingredient])
+                }
+      } yield {
+        val servings = serv.flatMap(s => Try(s.toInt).toOption).getOrElse(0)
+        Recipe(name, note, link, id, med, meta, servings, ingr)
+      }
     }
   )
 
@@ -89,11 +126,11 @@ package object json {
       ("image" :=
         ("original" :=
           ("url" := i.url) ->:
-            ("width" := i.width) ->:
-            ("height" := i.height) ->:
-            jEmptyObject
-          ) ->: jEmptyObject
-        ) ->: jEmptyObject,
+          ("width" := i.width) ->:
+          ("height" := i.height) ->:
+          jEmptyObject
+        ) ->: jEmptyObject
+      ) ->: jEmptyObject,
     hc =>
       for {
         url    <- (hc --\ "image" --\ "original" --\ "url").as[URL]

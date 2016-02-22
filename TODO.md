@@ -21,7 +21,7 @@ Later...
 * [ ] decision to prevent repeats
 * [ ] add ability to customize plan (delete recipes)
 * [ ] add recommendations
-* [ ] parse ingredients
+* [x] parse ingredients
 * [ ] create shopping list
 * [ ] filter pins that contain a recipe
 * [ ] oauth tool

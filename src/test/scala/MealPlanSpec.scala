@@ -31,26 +31,6 @@ class MealPlanSpec extends FunSpec with Matchers with GeneratorDrivenPropertyChe
       parseUrl("foobar") shouldBe None
     }
   }
-  /*
-    def parseDays(days: Option[String]): Days = {
-    days match {
-      case None => (1,1,1,1,1,1,1)
-      case Some(d) =>
-        val l = d.split(",").map(_.toLowerCase)
-        def setBit(day: String): Int = if (l.find(_ == day).isDefined) 1 else 0
-        (
-          setBit("sunday"),
-          setBit("monday"),
-          setBit("tuesday"),
-          setBit("wednesday"),
-          setBit("thursday"),
-          setBit("friday"),
-          setBit("saturday")
-        )
-    }
-  }
-
-   */
 
   describe("#parseDays") {
     it("should default to all days if no param is passed in") {

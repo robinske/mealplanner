@@ -61,11 +61,12 @@ package object json {
       } yield ApiResponse(d, p)
   )
 
-  implicit def measurementDecoder: DecodeJson[Measurement] = DecodeJson(hc =>
-    hc.as[Option[String]].map {
+  implicit def measurementCodec: CodecJson[Measurement] = CodecJson(m =>
+    m.toString.asJson,
+    _.as[Option[String]].map {
       _ match {
         case Some(s) => Measurement(s)
-        case None    => OtherMeasurement("unknown")
+        case None    => OtherMeasurement(List("unknown"))
       }
     }
   )
@@ -75,6 +76,13 @@ package object json {
       amount <- (hc --\ "amount").as[Measurement]
       name <- (hc --\ "name").as[String]
     } yield Ingredient(name, category, amount)
+  )
+
+  implicit def ingredientEncoder: EncodeJson[Ingredient] = EncodeJson(i =>
+    ("name" := i.name) ->:
+    ("category" := i.category) ->:
+    ("amount" := i.measurement) ->:
+    jEmptyObject
   )
 
   implicit def ingredientListDecoder: DecodeJson[List[Ingredient]] = DecodeJson(
@@ -163,15 +171,23 @@ package object json {
   )
 
   implicit def mealPlanEncoder: EncodeJson[MealPlan] = EncodeJson(
-    mp =>
+    mp => {
+      val shoppingList = mp.shoppingList match {
+        case Nil => None
+        case xs  => Some(xs)
+      }
       ("Sunday"    :=? mp.sunday)    ->?:
-      ("Monday"    :=? mp.monday)    ->?:
-      ("Tuesday"   :=? mp.tuesday)   ->?:
-      ("Wednesday" :=? mp.wednesday) ->?:
-      ("Thursday"  :=? mp.thursday)  ->?:
-      ("Friday"    :=? mp.friday)    ->?:
-      ("Saturday"  :=? mp.saturday)  ->?:
-      jEmptyObject
+        ("Monday"    :=? mp.monday)    ->?:
+        ("Tuesday"   :=? mp.tuesday)   ->?:
+        ("Wednesday" :=? mp.wednesday) ->?:
+        ("Thursday"  :=? mp.thursday)  ->?:
+        ("Friday"    :=? mp.friday)    ->?:
+        ("Saturday"  :=? mp.saturday)  ->?:
+        ("shopping_list" :=? shoppingList ) ->?:
+        jEmptyObject
+    }
+
+
   )
 
 }

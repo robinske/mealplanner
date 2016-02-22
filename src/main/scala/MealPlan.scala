@@ -21,7 +21,22 @@ case class MealPlan(
   thursday: Option[Recipe],
   friday: Option[Recipe],
   saturday: Option[Recipe]
-)
+) {
+
+  def shoppingList: List[Ingredient] = {
+    val raw =
+      sunday.map(_.ingredients).getOrElse(List.empty) ++
+      monday.map(_.ingredients).getOrElse(List.empty) ++
+      tuesday.map(_.ingredients).getOrElse(List.empty) ++
+      wednesday.map(_.ingredients).getOrElse(List.empty) ++
+      thursday.map(_.ingredients).getOrElse(List.empty) ++
+      friday.map(_.ingredients).getOrElse(List.empty) ++
+      saturday.map(_.ingredients).getOrElse(List.empty)
+
+    Ingredient.reduceIngredients(raw)
+  }
+
+}
 
 object MealPlan {
 

@@ -21,24 +21,16 @@ case class MealPlan(
   thursday: Option[Recipe],
   friday: Option[Recipe],
   saturday: Option[Recipe]
-) {
+)
 
-  def shoppingList: List[Ingredient] = {
-    val raw =
-      sunday.map(_.ingredients).getOrElse(List.empty) ++
-      monday.map(_.ingredients).getOrElse(List.empty) ++
-      tuesday.map(_.ingredients).getOrElse(List.empty) ++
-      wednesday.map(_.ingredients).getOrElse(List.empty) ++
-      thursday.map(_.ingredients).getOrElse(List.empty) ++
-      friday.map(_.ingredients).getOrElse(List.empty) ++
-      saturday.map(_.ingredients).getOrElse(List.empty)
-
-    Ingredient.reduceIngredients(raw)
-  }
-
-}
 
 object MealPlan {
+
+  implicit class RecipeExt(li: List[Recipe]) {
+    def shoppingList: List[Ingredient] =
+      Ingredient.reduceIngredients(li.flatMap(_.ingredients))
+  }
+
 
   def loadConfig: Properties = {
     val config = new Properties()
@@ -46,23 +38,8 @@ object MealPlan {
     config
   }
 
-  def parseDays(days: Option[String]): Days = {
-    days match {
-      case None => (1,1,1,1,1,1,1)
-      case Some(d) =>
-        val l = d.split(",").map(_.toLowerCase)
-        def setBit(day: String): Int = if (l.find(_ == day).isDefined) 1 else 0
-        (
-          setBit("sunday"),
-          setBit("monday"),
-          setBit("tuesday"),
-          setBit("wednesday"),
-          setBit("thursday"),
-          setBit("friday"),
-          setBit("saturday")
-        )
-    }
-  }
+  def parseDays(days: Option[String]): Int =
+    days.flatMap(d => Try(d.toInt).toOption).getOrElse(7)
 
   def apply(url: String, days: Option[String]): Json = {
     val config = loadConfig
@@ -89,20 +66,11 @@ object MealPlan {
     }
   }
 
-  def mealPlanJson(plan: List[Recipe], days: Days): Json = {
-    val mealPlan = Random.shuffle(plan)
-
-    def addMeal(idx: Int, day: Int): Option[Recipe] =
-      if (day == 1) mealPlan.lift(idx) else None
-
-    MealPlan(
-      addMeal(0, days._1),
-      addMeal(1, days._2),
-      addMeal(2, days._3),
-      addMeal(3, days._4),
-      addMeal(4, days._5),
-      addMeal(5, days._6),
-      addMeal(6, days._7)
-    ).asJson
+  def mealPlanJson(plan: List[Recipe], days: Int): Json = {
+    val meals = Random.shuffle(plan).take(days)
+    Json(
+      "shopping_list" := meals.shoppingList,
+      "meals"         := meals
+    )
   }
 }

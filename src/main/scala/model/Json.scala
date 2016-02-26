@@ -171,23 +171,15 @@ package object json {
   )
 
   implicit def mealPlanEncoder: EncodeJson[MealPlan] = EncodeJson(
-    mp => {
-      val shoppingList = mp.shoppingList match {
-        case Nil => None
-        case xs  => Some(xs)
-      }
+    mp =>
       ("Sunday"    :=? mp.sunday)    ->?:
-        ("Monday"    :=? mp.monday)    ->?:
-        ("Tuesday"   :=? mp.tuesday)   ->?:
-        ("Wednesday" :=? mp.wednesday) ->?:
-        ("Thursday"  :=? mp.thursday)  ->?:
-        ("Friday"    :=? mp.friday)    ->?:
-        ("Saturday"  :=? mp.saturday)  ->?:
-        ("shopping_list" :=? shoppingList ) ->?:
-        jEmptyObject
-    }
-
-
+      ("Monday"    :=? mp.monday)    ->?:
+      ("Tuesday"   :=? mp.tuesday)   ->?:
+      ("Wednesday" :=? mp.wednesday) ->?:
+      ("Thursday"  :=? mp.thursday)  ->?:
+      ("Friday"    :=? mp.friday)    ->?:
+      ("Saturday"  :=? mp.saturday)  ->?:
+      jEmptyObject
   )
 
 }

@@ -1,4 +1,4 @@
-package me.krobinson.mealplan.json.generators
+package me.krobinson.mealplan.model.json.generators
 
 import java.net.URL
 

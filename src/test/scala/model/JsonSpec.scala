@@ -8,7 +8,7 @@ import argonaut._, Argonaut._
 
 import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import org.scalatest.{Matchers, FunSpec}
-import me.krobinson.mealplan.json.generators._
+import me.krobinson.mealplan.model.json.generators._
 
 import me.krobinson.mealplan.model._
 

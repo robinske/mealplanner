@@ -13,7 +13,7 @@ object Main extends TwitterServer {
     get("mealplan" :: param("boardUrl") :: paramOption("days")) { (boardUrl: String, days: Option[String]) =>
       Ok(MealPlan(boardUrl, days).nospaces)
     }
-  }
+  }.withHeader(("Access-Control-Allow-Origin", "*"))
 
   val api: Service[Request, Response] = (getHealth :+: getMealPlan).toService
   val server = Http.server.serve(":8080", api)

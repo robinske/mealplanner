@@ -13,16 +13,6 @@ import argonaut._, Argonaut._
 import me.krobinson.mealplan.model._
 import me.krobinson.mealplan.model.json._
 
-case class MealPlan(
-  sunday: Option[Recipe],
-  monday: Option[Recipe],
-  tuesday: Option[Recipe],
-  wednesday: Option[Recipe],
-  thursday: Option[Recipe],
-  friday: Option[Recipe],
-  saturday: Option[Recipe]
-)
-
 
 object MealPlan {
 
@@ -30,7 +20,6 @@ object MealPlan {
     def shoppingList: List[Ingredient] =
       Ingredient.reduceIngredients(li.flatMap(_.ingredients))
   }
-
 
   def loadConfig: Properties = {
     val config = new Properties()

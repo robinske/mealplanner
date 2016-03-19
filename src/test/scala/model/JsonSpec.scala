@@ -91,23 +91,6 @@ class JsonSpec extends FunSpec with Matchers with GeneratorDrivenPropertyChecks 
     }
   }
 
-  describe("#mealPlanEncoder") {
-    it("should encode the existing days") {
-      forAll(genMealPlan, minSuccessful(3), MaxSize(3)) { orig =>
-        val json = orig.asJson
-
-        val hc = json.hcursor
-        (hc --\ "Sunday").as[Recipe].toOption shouldBe orig.sunday
-        (hc --\ "Monday").as[Recipe].toOption shouldBe orig.monday
-        (hc --\ "Tuesday").as[Recipe].toOption shouldBe orig.tuesday
-        (hc --\ "Wednesday").as[Recipe].toOption shouldBe orig.wednesday
-        (hc --\ "Thursday").as[Recipe].toOption shouldBe orig.thursday
-        (hc --\ "Friday").as[Recipe].toOption shouldBe orig.friday
-        (hc --\ "Saturday").as[Recipe].toOption shouldBe orig.saturday
-      }
-    }
-  }
-
   describe("#ingredentCodec") {
     it("should decode the ingredients nested in the meta fields") {
       val json = Source.fromFile("src/test/resources/ingredients.json").getLines().mkString

@@ -170,16 +170,4 @@ package object json {
     hc => (hc --\ "pins").as[Int].map(Counts)
   )
 
-  implicit def mealPlanEncoder: EncodeJson[MealPlan] = EncodeJson(
-    mp =>
-      ("Sunday"    :=? mp.sunday)    ->?:
-      ("Monday"    :=? mp.monday)    ->?:
-      ("Tuesday"   :=? mp.tuesday)   ->?:
-      ("Wednesday" :=? mp.wednesday) ->?:
-      ("Thursday"  :=? mp.thursday)  ->?:
-      ("Friday"    :=? mp.friday)    ->?:
-      ("Saturday"  :=? mp.saturday)  ->?:
-      jEmptyObject
-  )
-
 }

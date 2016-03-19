@@ -3,7 +3,6 @@ package me.krobinson.mealplan.model.json.generators
 import java.net.URL
 
 import argonaut._, Argonaut._
-import me.krobinson.mealplan.MealPlan
 import me.krobinson.mealplan.model._
 import org.scalacheck.Gen, Gen._
 
@@ -65,15 +64,4 @@ object `package` {
       nextPage <- option(genURL.map(_.toString))
       board    <- genBoard
     } yield ApiResponse(board, nextPage)
-
-  def genMealPlan: Gen[MealPlan] =
-    for {
-      su <- option(genRecipe)
-      mo <- option(genRecipe)
-      tu <- option(genRecipe)
-      we <- option(genRecipe)
-      th <- option(genRecipe)
-      fr <- option(genRecipe)
-      sa <- option(genRecipe)
-    } yield MealPlan(su, mo, tu, we, th, fr, sa)
 }
